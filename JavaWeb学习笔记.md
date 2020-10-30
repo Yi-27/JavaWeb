@@ -281,3 +281,29 @@ response.sendRedirect("http://localhost:8080/web_servlet/response2");
 + 第五步：编写Service和测试 
 
     
+
+
+
+# Listener监听器
+
++ Listener是JavaEE的规范，就是接口
++ 监听器的作用是，监听某种事物的变化，然后通过回调函数，反馈给程序去做一些相应的处理
+
+
+
+## ServletContextListener监听器
+
+
+
+
+
+
+
+# 文件的上传和下载
+
++ 要有个form标签，method=post请求
++ form标签的encType属性值必须为multipart/form-data值
+    + 表示提交的数据，以多段（每个表单项一个数据段）的形式进行拼接，然后以二进制流的形式发送给服务器
+    + 客户端怎么发送的，服务器就怎么接收，服务器需要使用zi
++ 在form标签中使用`<input type=file>`添加上传的文件
++ 编写服务器代码接收，处理上传的数据

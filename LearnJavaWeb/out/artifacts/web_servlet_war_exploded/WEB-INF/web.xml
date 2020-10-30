@@ -49,6 +49,14 @@
         <servlet-name>ResponseServlet2</servlet-name>
         <servlet-class>com.example.test.ResponseServlet2</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UploadServlet</servlet-name>
+        <servlet-class>com.example.test.UploadServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DownloadServlet</servlet-name>
+        <servlet-class>com.example.test.DownloadServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -85,5 +93,13 @@
     <servlet-mapping>
         <servlet-name>ResponseServlet2</servlet-name>
         <url-pattern>/response2</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadServlet</servlet-name>
+        <url-pattern>/upload</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DownloadServlet</servlet-name>
+        <url-pattern>/download</url-pattern>
     </servlet-mapping>
 </web-app>

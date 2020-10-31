@@ -1,6 +1,7 @@
 package com.example.test;
 
 import org.apache.commons.io.IOUtils;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 
 /**
  * @author Yi-27
@@ -26,7 +28,7 @@ public class DownloadServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // 1. 获取下载文件名
-        String fileName = "girl.png";
+        String fileName = "女孩.png";
         // 2. 构建文件路径
         // 获取当前工程路径
         ServletContext servletContext = getServletContext();
@@ -35,13 +37,17 @@ public class DownloadServlet extends HttpServlet {
         System.out.println("下载类型为：" + mimeType);
 //        String realPath = servletContext.getRealPath("/");
 
-        // 在回传钱，通过响应头告诉客户端返回的数据类型
+        // 在回传前，通过响应头告诉客户端返回的数据类型
         response.setContentType(mimeType);
         // 5. 并且告诉客户端要用于下载使用（使用响应头）
-        // Content-Disposition；表示下载的使用
+        // Content-Disposition；响应头，表示收到的数据怎么处理
         // attachment表示附件，用于下载使用
         // filename= 表示指定下载的文件名
-        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        // url编码时吧汉字转换成%xx%xx的格式
+//        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+        // 如果不支持URLEncoder需要使用BASE64编解码，就需要这样使用
+        response.setHeader("Content-Disposition", "attachment;filename==?UTF-8?B?" + new BASE64Encoder().encode(fileName.getBytes("UTF-8")));
+
 
         // 获取资源像流一样的返回
         /*

@@ -307,3 +307,52 @@ response.sendRedirect("http://localhost:8080/web_servlet/response2");
     + 客户端怎么发送的，服务器就怎么接收，服务器需要使用zi
 + 在form标签中使用`<input type=file>`添加上传的文件
 + 编写服务器代码接收，处理上传的数据
+
+
+
+### 附件中文名乱码
+
+对于IE和Chrome和Edge浏览器，使用URLEncoder类的encode(filename,charset)方法来解决
+
++ 新版本的火狐也支持了
+
+对于旧版本的火狐浏览器，使用BASE64编解码来解决 
+
+
+
+
+
+# Cookie
+
++ 饼干
++ 由服务器通知客户端保存键值对的一种技术
++ 客户端有了Cookie后，每次请求都发送给服务器
++ 每个Cookie的大小不能超过4kb
+
+
+
+#### Cookie的创建
+
++ 客户端（浏览器）：没有Cookie
+
++ 服务器（Tomcat）：
+    + 创建Cookie对象
+        + Cookie cookie = new Cookie("key1", "value1");
+    + 通知客户端保存Cookie
+        + response.addCookie( cookie );
+        + 通过响应头Set-Cookie通知客户端保存Cookie
+            + Set-Cookie: key1=value1
++ 客户端收到响应后，发现有set-cookie响应头，就去确认一下有没有这个Cookie
+    + 没有就创建
+    + 有就修改
+
+
+
+#### Cookie的获取
+
++ 客户端（浏览器）：
+    + 有Cookie，key1=value1
++ 通过请求头：Cookie: xx=xx 把Cookie信息发送给服务器
++ 服务器（Tomcat）：
+    + 获取客户端发送过来的Cookie只需要一行代码
+    + request.getCookies()，返回Cookie[]数组

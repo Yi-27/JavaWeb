@@ -17,10 +17,12 @@ public class ResponseServlet2 extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        System.out.println(request.getSession().getId());
         // 放置中文乱码
         response.setContentType("text/html; charSet=UTF-8");
         System.out.println(response.getCharacterEncoding());
         System.out.println(request.getCharacterEncoding());
         response.getWriter().write("重定向到2这里");
+
     }
 }

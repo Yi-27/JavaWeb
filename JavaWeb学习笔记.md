@@ -356,3 +356,191 @@ response.sendRedirect("http://localhost:8080/web_servlet/response2");
 + 服务器（Tomcat）：
     + 获取客户端发送过来的Cookie只需要一行代码
     + request.getCookies()，返回Cookie[]数组
+
+
+
+#### Cookie值的修改
+
+方案一：
+
++ 先创建一个要修改的Cookie对象
++ 在构造器，同时赋予新的Cookie值
++ 调用response.addCookie(Cookie);
+
+方案二：
+
++ 先查找到需要修改的Cookie对象
+
++ 调用setValue()方法赋予新的Cookie值
+
++ 调用response.addCookie()通知客户端保存修改
+    + ```java
+        Cookie cookie = CookieUtils.findCookie("key2", request.getCookies());
+        if(cookie != null){
+            cookie.setValue("newValue2");
+            response.addCookie(cookie);
+        }
+        ```
+
+    + **Cookie值不能是中文，一些符号，但是可以将这些内容通过BASE64编码后使用**
+
+
+
+#### Cookie生命控制
+
++ setMaxAge()：
+    + 正数表示在指定的秒数后过期
+    + 负数表示关闭浏览器后，删除Cookie。（默认负数）
+    + 0表示立即删除
+    + 时间都是按格林时间为标准
+
+
+
+#### Cookie有效路径Path的设置
+
++ Cookie的path属性是通过请求的地址来进行有效地过滤
+
++ ```java
+    Cookie cookie = new Cookie("path1", "path1");
+    // getContextPath() ===>>> 得到工程路径
+    cookie.setPath(request.getContextPath() + "/abc"); // ===>>> /工程路径/abc
+    response.addCookie(cookie)
+    ```
+
+#### 使用Cookie做到免用户名登录
+
++ 在第一次登录后，把用户名记录在Cookie中发送给客户端
++ 第二次访问登录页面时，把记录用户名的Cookie发送给服务器，服务器将其中的用户名同登录页面一同返回给客户端
+
+
+
+# Session会话
+
++ Session是Java中的一个接口（HttpSession）
++ Session就是会话，用来维护一个客户端和服务器之间关联的一种技术
++ 每个客户端都有自己的一个Session会话
++ Session会话中，经常用来保存用户登录之后的信息
++ Session会话中，保存的信息可以是中文的
+
+
+
+#### Session的创建和获取
+
++ ```java
+    // 创建和获取Session会话对象（API一样）
+    HttpSession session = request.getSession();
+    // 判断当前Session会话是否是新创建的
+    boolean isNew = session.isNew();
+    // 获取Session会话的唯一ID
+    String id = session.getId();
+    ```
+
+
+
+#### Session域中数据的存取
+
+```java
+// 存
+request.getSession().setAttribute("key1", "value1");
+// 取
+Object key1 = request.getSession().getAttribute("key1");
+// 删
+request.removeAttribute("key1");
+```
+
+
+
+#### Session生命周期控制
+
++ setMaxInactiveInterval(int inteval)设置Session的超时时间（单位为秒），超过指定时长，Session就会被销毁
+
+    + 正数，设定Session的超时时长
+    + 负数，永不超时（谨慎使用）
+    + 没有0，0不是马上超时
+        + session.invalidate()，通过该方法让Session马上超时
+
++ getMaxInactiveInterval()获取Session的超时时间
+
++ Session默认的超时时长为30分钟
+
+    + 这是因为在Tomcat服务器的配置文件web.xml中默认有以下配置
+
+    + ```xml
+        <session-config>
+        	<session-time>30</session-timeout>
+        </session-config>
+        ```
+
+        + 如果需要修改指定Session的超时时长，就需要使用setMaxInactiveInterval
+
++ Session的超时指的是，客户端两次请求的最大间隔时长
+
++ 当重新部署程序的时候，再次访问，会覆盖掉原有的Session
+
+
+
+## 浏览器和Session之间关联的技术内幕
+
++ 客户端（浏览器）刚开始没有Cookie信息，这时向服务器（Tomcat）发送请求
+
++ 服务器，request.getSession();创建会话对象
+
+    + 服务器每次创建Session会话的时候，都会创建一个**Cookie对象**
+        + 这个Cookie对象的**key永远是：JSESSIONID**
+        + **值是**新创建出来的**Session的id值**（可以通过session.getId()查看）
+    + 通过响应把新创建出来的Session的id值返回给客户端
+        + Set-Cookie: JSESSIONID=Session的id值；
+
++ 浏览器解析收到的数据，就马上创建出一个Cookie对象
+
++ 后续有了Cookie后，每次请求，都会把Session的id以Cookie的形式发送给服务器
+
+    + Cookie：JSESSIONID=Session的id值
+
++ 服务器对于后续请求，request.getSession();通过Cookie中的id值找到之前创建好与之对应的Session对象，并返回
+
++ 如果在浏览器中，将该Session对象的Cookie被删除了，服务器会重新创建Session会话，将上述流程重新走一遍
+
+    
+
+## 表单重复提交的问题
+
+三种常见情况：
+
++ 提交完表单，服务器使用**请求转发**来进行页面的跳转。这个时候，当用户按下F5，就会发起最后一次的请求。造成表单重复提交的问题。
+    + 解决方法：使用**重定向**来进行跳转
+
++ 用户正常提交服务器，但是用于网络延迟等原因，迟迟未收到服务器的响应，这时用户以为提交失败，就多点了几次提交操作，也会造成表单重复提交
++ 用户正常提交服务器，服务器也没有延迟，但是提交完成后，用户回退浏览器，重新提交，也会造成表单重复提交
+
+
+
+#### 解决方案：验证码
+
++ 当用户第一次访问表单时，就要给表单生成一个随机的验证码字符串
+    + 要把验证码保存到Session域中
+    + 要把验证码生成为验证码图片显示在表单中
+
++ 当用户将填好的表单发送给服务器时，对应的Servlet程序要进行相应的操作
+    + 提取Session中的验证码，并删除Session中的验证码
+    + 获取表单中的表单项信息
+    + 比较Session中的验证码和表单项中的验证码是否相等
+
+
+
+### Google验证码kaptcha
+
++ 导入谷歌验证码的jar包
++ 在web.xml中配置用于生成验证码的Servlet程序
++ 在表单中使用img标签去显示验证码图片并使用它
+
+
+
+注意：当请求验证码图片的地址不变时，由于浏览器会将该地址的资源缓存下来，再发请求时就无法获取新的验证码图片了。因此可以在请求验证码图片的地址后面加个参数，比如
+
+```javascript
+$("#kaptcha").click(function () {
+    this.src = "kaptcha.jpg?d=" + new Date();
+});
+```
+

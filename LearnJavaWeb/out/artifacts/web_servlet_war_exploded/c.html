@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>验证码测试</title>
+    <base href="http://localhost:8080/web_servlet/">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+</head>
+<body>
+<form action="regist" method="post">
+    用户名：<input type="text" name="username"><br/>
+    密码：<input type="password" name="password"><br/>
+    验证码：<input type="text" name="kaptcha" style="width: 50px">
+    <img id="kaptcha" src="kaptcha.jpg" alt="验证码" style="width: 100px; height: 28px"><br/>
+    <input type="submit" value="登录">
+    <script type="text/javascript">
+        // 页面加载完成之后
+        $(function () {
+            // 给验证码图片绑定单击事件
+            $("#kaptcha").click(function () {
+                this.src = "kaptcha.jpg?d=" + new Date();
+            });
+        });
+    </script>
+</form>
+</body>
+</html>

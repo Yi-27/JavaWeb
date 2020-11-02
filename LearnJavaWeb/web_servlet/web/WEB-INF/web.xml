@@ -57,6 +57,22 @@
         <servlet-name>DownloadServlet</servlet-name>
         <servlet-class>com.example.test.DownloadServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SessionServlet</servlet-name>
+        <servlet-class>com.example.cookie_session.SessionServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CookieServlet</servlet-name>
+        <servlet-class>com.example.cookie_session.CookieServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>KaptchaServlet</servlet-name>
+        <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RegistServlet</servlet-name>
+        <servlet-class>com.example.cookie_session.RegistServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -101,5 +117,21 @@
     <servlet-mapping>
         <servlet-name>DownloadServlet</servlet-name>
         <url-pattern>/download</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SessionServlet</servlet-name>
+        <url-pattern>/session</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CookieServlet</servlet-name>
+        <url-pattern>/cookie</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>KaptchaServlet</servlet-name>
+        <url-pattern>/kaptcha.jpg</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegistServlet</servlet-name>
+        <url-pattern>/regist</url-pattern>
     </servlet-mapping>
 </web-app>

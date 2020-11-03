@@ -73,6 +73,10 @@
         <servlet-name>RegistServlet</servlet-name>
         <servlet-class>com.example.cookie_session.RegistServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.example.cookie_session.LoginServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -134,4 +138,18 @@
         <servlet-name>RegistServlet</servlet-name>
         <url-pattern>/regist</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+
+    <filter>
+        <filter-name>FilterServlet</filter-name>
+        <filter-class>com.example.filter.TestFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>FilterServlet</filter-name>
+        <url-pattern>/imgs/*</url-pattern>
+    </filter-mapping>
 </web-app>

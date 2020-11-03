@@ -544,3 +544,149 @@ $("#kaptcha").click(function () {
 });
 ```
 
+
+
+# Filter过滤器
+
++ 三大组件之一，JavaEE的规范，接口
++ 作用：**拦截请求，过滤响应**
+
+```xml
+    <!-- filter标签用于配置一个Filter过滤器 -->
+    <filter>
+        <!-- 给filter起一个别名 -->
+        <filter-name>FilterServlet</filter-name>
+        <!-- 配置filter的全类名 -->
+        <filter-class>com.example.filter.TestFilter</filter-class>
+    </filter>
+    <!-- filter-mapping配置Filter过滤器的拦截路径 -->
+    <filter-mapping>
+        <!-- filter-name表示当前的拦截路径给哪个filter使用 -->
+        <filter-name>FilterServlet</filter-name>
+        <!-- url-pattern配置拦截路径
+            / 斜杠 表示请求地址为：http://ip:port/工程路径/ 映射到IDEA的web目录
+            /imgs/* 表示请求地址为： http://ip:port/工程路径/imgs/*
+        -->
+        <url-pattern>/imgs/*</url-pattern>
+    </filter-mapping>
+```
+
+```java
+/**
+     * doFilter方法是专门用于拦截请求，过滤响应的。 可以做权限检查
+     * @param servletRequest
+     * @param servletResponse
+     * @param filterChain
+     * @throws IOException
+     * @throws ServletException
+     */
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        // 需要获取强转成子类对象
+        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        // 获取会话
+        HttpSession session = httpServletRequest.getSession();
+        // 提取 user 字段
+        Object user = session.getAttribute("user");
+        if (user == null){
+            System.out.println("尚未登录");
+            StringBuffer requestURL = httpServletRequest.getRequestURL();
+            System.out.println(requestURL.toString());
+            session.setAttribute("Referer", requestURL.toString());
+            servletRequest.getRequestDispatcher("/login.html").forward(servletRequest, servletResponse);
+            return;
+        }else{
+            System.out.println("已登录继续！");
+            // 让程序继续往下访问用户的目标资源
+            filterChain.doFilter(servletRequest, servletResponse);
+        }
+    }
+```
+
+当浏览器有缓存的页面或者资源时，就不会去请求服务器
+
+这时需要清掉浏览器的缓存或者在请求的url中添加能够唯一识别的参数，使得请求的url不是相同的即可
+
+
+
+#### Filter过滤器的使用步骤
+
++ 编写一个类去实现Filter接口
++ 实现过滤方法doFilter()
++ 到web.xml中去配置Filter的拦截路径
+
+
+
+#### Filter生命周期
+
+Filter的生命周期包含几个方法：
+
++ 构造器方法
++ init初始化方法
+    + 在Web工程启动的时候，1、2步都启动了
++ doFilter过滤方法
+    + 每次拦截到请求就会执行
++ destroy销毁方法
+    + 停止Web工程时就会执行
+
+
+
+## FilterConfig类
+
+Filter过滤器的配置文件
+
+Tomcat每次创建Filter的时候，也会同时创建一个FilterConfig类，这里包含了Filter配置信息
+
+FilterConfig类的作用是获取filter过滤器的配置内容
+
++ 获取Filter名称filter-name的内容
++ 获取Filter中配置的init-param初始化参数
++ 获取ServletContext对象
+
+
+
+### FilterChain过滤器链
+
+FilterChain.doFilter()方法的作用
+
++ 执行下一个Filter过滤器（如果有的话）
++ 执行目标资源（没有Filter）
+
+
+
+如果有两个Filter（Filter1在前，Filter2在后）的情况下：
+
++ 执行Filter1的前置代码
+    + 执行Filter1中的FilterChain.doFilter();
++ 执行Filter2的前置代码
+    + 执行Filter2中的FilterChain.doFilter()；
+        + 若没有执行FilterChain.doFilter()；就直接跳到Filter1的后置代码了
+    + 结果没有别的Filter了
+    + 就执行目标资源（html、jsp页面、servlet程序、图片、文本、视频等），返回给浏览器
++ 执行Filter2的后置代码
++ 执行Filter1的后置代码
+
+
+
+在多个Filter过滤器执行的时候，它们执行的先后顺序是他们在web.xml中从上到下的顺序决定的，而且应该是由filter-mapping来决定的
+
+
+
+多个Filter过滤器执行的特点：
+
++ 所有filter和目标资源**默认都执行在同一个线程中**
++ 多个Filter共同执行的时候，它们都使用同一个Request对象，数据共享
+
+
+
+#### Filter拦截路径的三种方式
+
++ 精确匹配
++ 目录匹配
+    + `<url-pattern>/imgs/*</url-pattern>`
++ 后缀名匹配
+    + `<url-pattern>*.html</url-pattern>`
+
+
+
+Filter过滤器只关心请求的地址是否匹配，不关心请求的资源是否存在

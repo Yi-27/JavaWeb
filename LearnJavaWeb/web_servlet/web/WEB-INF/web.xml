@@ -77,6 +77,10 @@
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>com.example.cookie_session.LoginServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AjaxServlet</servlet-name>
+        <servlet-class>com.example.ajax.AjaxServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -142,7 +146,10 @@
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>AjaxServlet</servlet-name>
+        <url-pattern>/ajax</url-pattern>
+    </servlet-mapping>
 
     <!-- filter标签用于配置一个Filter过滤器 -->
     <filter>

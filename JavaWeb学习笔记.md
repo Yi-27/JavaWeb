@@ -690,3 +690,225 @@ FilterChain.doFilter()方法的作用
 
 
 Filter过滤器只关心请求的地址是否匹配，不关心请求的资源是否存在
+
+同时一个Filter可以拦截多个路径，即一个filter-mapping内可以有多个url-pattern
+
+
+
+### ThreadLocal的使用
+
+**用于解决线程安全的工具类**
+
+每个线程都保持对线程局部变量副本的隐式引用，只要线程是活动的并且ThreadLocal实例是可访问的；在线程消失之后，其线程局部实例的所有副本都会被垃圾回收（除非存在对这些副本的其他引用）。
+
++ ThreadLocal可以给当前线程关联一个数据（可以是普通变量，可以是对象，也可以是数组，集合）
++ ThreadLocal的特点：
+    + ThreadLocal可以为当前线程关联一个数据（它可以像Map一样存取数据，key为当前线程）
+    + 每一个ThreadLocal对象，只能为当前线程关联一个数据，如果要为当前线程关联多个数据，就需要使用多个ThreadLocal对象实例
+    + 每个ThreadLocal对象实例定义的时候，一般都是static类型
+    + ThreadLocal中保存数据，在线程销毁后，会由JVM虚拟机自动释放
+
+```java
+public static ThreadLocal<Object> threadLocal = new ThreadLocal<Object>();
+threadLocal.set("abc"); // 被后续的覆盖
+threadLocal.set("def");
+threadLocal.get(); // def
+```
+
+
+
+#### JDBC的数据库事务管理
+
+```java
+Connection conn = JdbcUtils.getConnection();
+try{
+    conn.setAutoCommit(false); // 设置为手动管理事务
+    // 执行一系列的jdbc操作
+    conn.commit(); // 手动提交事务
+}catch(Exception e){
+    conn.rollback(); // 回滚事务
+}
+```
+
++ 要确保所有操作要么都成功，要么都失败，就必须要使用数据库的事务
++ 要确保所有操作都在一个事务内，就必须要确保，所有操作都使用同一个Connection连接对象
++ 如何确保所有操作都使用同一个Connection连接对象？
+    + 可以使用ThreadLocal对象，来确保所有操作都使用同一个Connection对象
+    + ThreadLocal要确保所有操作都使用同一个Connection连接对象
+    + 那么操作的前提条件是**所有操作都必须在同一个线程中完成**
+    + 并且在这时可以在dao层捕获异常，但是一定要往上抛，
+        + 好让服务层执行查询、插入、更新等等操作时，能捕获到异常
+            + 这时如果没有异常就commit
+            + 有异常就rollback
+            + 最后在提交和回滚的finally中执行关闭连接close（如果是用的连接池，就执行连接池中的remove操作）
+
+ 
+
+#### 使用Filter统一给Service方法加上try-catch来管理事务
+
+![image-20201104160545036](C:\Users\Jarvis\AppData\Roaming\Typora\typora-user-images\image-20201104160545036.png)
+
+#### 使用Tomcat统一管理异常，友好展示错误页面
+
++ 需要有异常页面(html/jsp等)
+
++ 需要配置web.xml文件
+
+    + ```xml
+        <!-- error-page标签配置，服务器出错之后，自动跳转的页面 -->
+        <error-page>
+        	<!-- error-code是错误类型 -->
+            <error-code>404</error-code>
+            <!-- location标签表示，要跳转去的页面路径 -->
+            <location>/pages/error/error404.html</location>
+        </error-page>
+        ```
+
+
+
+# JSON
+
+json是一种轻量级的数据交换格式
+
++ 轻量级指的是跟xml做比较
++ 数据交换指的是客户端和服务器之间业务数据的传递格式
+
+
+
+## JSON在javaScript中的使用
+
+### json的定义
+
++ var json = {"a":"123","b":321,"c":true};
+
+### json的访问
+
++ json["a"]或json.a
+
+
+
+### json的两个常用方法
+
+json存在的两种形式
+
++ 对象的形式，称为json对象
++ 字符串的形式存在，称为json字符串
+
+一般要操作json中的数据时，需要json对象的格式
+
+一般要在客户端和服务器之间进行数据交换的时候，使用json字符串
+
+
+
+#### JSON.stringify()
+
+把JSON对象转换称为JSON字符串
+
+var jsonObjString = JSON.stringify(jsonObj);
+
+
+
+#### JSON.parse()
+
+把JSON字符串转换成JSON对象
+
+var jsonObj = JSON.parse(jsonObjString);
+
+
+
+## JSON在Java中的使用
+
+需要gson的jar包
+
+#### JSON与JavaBean对象互转
+
++ ```java
+    Person person = new Person(1, "hahah");
+    // 创建Gson对象
+    Gson gson = new Gson();
+    // 将JavaBean对象转换成json对象
+    String personJsonString = gson.toJson(person);
+    
+    // fromJson把json字符串转换回Java对象
+    // 参数1，json字符串
+    // 参数2，转换成为的Java对象
+    gson.fromJson(personJsonString, Person.class);
+    ```
+
+
+
+
+
+#### JSON与Java List互转
+
+```java
+List<Person> personList = new ArrayList<>();
+personList.add(new Person(1, "哈哈"))；
+personList.add(new Person(2, "嘿嘿"))；
+Gson gson = new Gson();
+
+// 把List转换为json字符串
+String personListJsonString = gson.toJson(personList);
+
+// 将json字符串转换成List，需要一个继承TypeToken<List<Person>>，才能让fromJson明白该怎么转换成List，否则就转换成了List中嵌套着Map，而不是List中是Person对象
+List<Person> list = gson.fromJson(personListJsonString, new PersonListType().getType());
+// 这是list就是上面的personList了
+```
+
+```java
+public class PersonListType extends TypeToken<ArrayList<Person>>{
+    // 这里面什么都不用写
+}
+```
+
+
+
+#### JSON与Java Map互转
+
+```java
+Map<Integer, Person> personMap = new HashMap<>();
+
+personMap.put(1, new Person(1, "哈哈"));
+personMap.put(2, new Person(2, "嘿嘿"));
+
+Gson gson = new Gson();
+
+// 把map集合转换成为json字符串
+String personMapJsonString = gson.toJson(personMap);
+
+// 把json字符串转换成为map集合
+Map<Integer, Person> map = gson.fromJson(personMapJsonString, new PersonMapType().getType());
+// 或者使用匿名内部类
+Map<Integer, Person> map = gson.fromJson(personMapJsonString, new TypeToken<HashMap<Integer, Person>>(){}.getType());
+```
+
+```java
+public class PersonMapType extends TypeToken<HashMap<Integer, Person>>{
+    // 这里面什么都不用写
+}
+```
+
+
+
+# Ajax请求
+
+AJAX即“Asynchronous Javascript And XML”（异步 JavaScript 和 XML），是一种创建交互式网页应用的网页开发技术
+
+**ajax是一种浏览器通过js异步发起请求，局部更新页面的技术 **
+
+
+
+#### 原生Ajax请求
+
+XMLHttpRequest对象的三个重要的属性
+
++ onreadystatechange：存储函数（或函数名），每当readyState属性改变时，就会调用该函数
++ readyState：存有XMLHttpRequest的状态，从0到4发生变化
+    + 0：请求未初始化
+    + 1：服务器连接已建立
+    + 2：请求已接收
+    + 3：请求处理中
+    + 4：请求已完成，且响应已就绪
++ statues：
+    + 200：OK
+    + 404：未找到页面

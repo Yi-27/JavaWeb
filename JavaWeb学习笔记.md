@@ -912,3 +912,108 @@ XMLHttpRequest对象的三个重要的属性
 + statues：
     + 200：OK
     + 404：未找到页面
+
+```javascript
+function ajaxRequest() {
+    // 1. 首先要创建XMLHttpRequest对象
+    var xmlHttpRequest = new XMLHttpRequest();
+    // 2. 调用open方法设置请求参数
+    xmlHttpRequest.open("GET", "http://localhost:8080/web_servlet/ajax");
+    // 3. 在send方法前绑定onreadystatechange事件，处理请求完成后的操作
+    xmlHttpRequest.onreadystatechange = function () {
+        if (xmlHttpRequest.readyState == 4 && xmlHttpRequest.status == 200){
+
+            var jsonObj = JSON.parse(xmlHttpRequest.responseText);
+            document.getElementById("text").innerHTML = xmlHttpRequest.responseText;
+            document.getElementById("content").innerHTML = xmlHttpRequest.responseXML;
+            console.log(xmlHttpRequest.responseXML); // null
+            document.getElementById("obj").innerHTML = "ID：" + jsonObj.id + ", Name:" + jsonObj['name'];
+        }
+    };
+
+    // 3. 调用send方法发送请求
+    xmlHttpRequest.send();
+}
+```
+
+open(method, url, 第三个参数)：其中第三个参数是个boolean类型的，**表示ajax请求是同步还是异步的**，**默认**不带第三个参数或参数为true为**异步**，当**第三个参数为false为同步**
+
+
+
+#### Ajax的请求的特点
+
++ Ajax请求的局部更新，浏览器的地址栏不会发生变化
+    + 局部更新不会舍弃原来页面的内容
+
+
+
+### JQuery中的Ajax请求
+
+#### $.ajax请求
+
+```javascript
+$.ajax({
+    url: "http://localhost:8080/web_servlet/ajax",
+    // data: "action=JQueryAjax&d=123", // 这两种格式都可以
+    data: {action: "AjaxJQuery", d: 321},
+    type: "POST",
+    // dataType: "text", // text表示纯文本，xml表示xml数据,json表示json对象
+    dataType: "json", // 这样就自动把返回数据转成对象了
+    success: function (data) {
+        // var jsonObj = JSON.parse(data); // 就JSON数据转换成对象
+        // $("#msg").html("姓名：" + jsonObj.name + ", 编号：" + jsonObj['id']);
+        $("#msg").html("姓名：" + data.name + ", 编号：" + data['id']);
+    }
+});
+```
+
+#### $.get请求和$.post请求
+
+```javascript
+$.get("http://localhost:8080/web_servlet/ajax", "action=jQueryGet", function(data){
+    $("#msg").html("姓名：" + data.name + ", 编号：" + data['id']);
+}, "json"); 
+// post一样
+// 第一个参数url，第二个参数提交的数据，第三个参数是回调函数，第四个参数是返回个回调函数的数据的类型为json
+```
+
+
+
+#### $.getJSON方法
+
+```javascript
+$.getJSON("url", "action=jQueryGetJSON", function(data){
+    $("#msg").html("姓名：" + data.name + ", 编号：" + data['id']);
+});
+```
+
+
+
+#### JQuery的Serialize方法
+
+serialize()可以把form表单中所有表单项的内容都获取到，并以name=value&name=value的形式进行拼接
+
+```javascript
+$('#form').serialize();
+```
+
+
+
+# i18n国际化
+
+国际化（internationlization)要素
+
++ Locale对象，表示不同的时区，位置，语言
+    + zh_CN：中国，中文
+    + en_US：英文，美国
++ Properties属性配置文件
+    + 国际化配置文件命名规则
+    + baseName_locale.properties
+    + 比如：baseName是 i18n
+        + 中文的配置文件名是：i18n_zh_CN.properties
+        + 英文的配置文件名是：i18n_en_US.properties
++ ResourceBundle资源包
+    + ResourceBundle.getBundle()：ResourceBundle类
+    + 根据给定的baseName和Locale读取相应的配置文件，得到文字信息
+    + ResourceBundle.getString( key )，得到想要的不同国家的语言信息
+

@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Ajax请求</title>
+    <base href="http://localhost:8080/web_servlet/">
     <script type="text/javascript">
         function ajaxRequest() {
             // 1. 首先要创建XMLHttpRequest对象
             var xmlHttpRequest = new XMLHttpRequest();
             // 2. 调用open方法设置请求参数
-            xmlHttpRequest.open("GET", "http://localhost:8080/ajax/ajaxServlet");
+            xmlHttpRequest.open("GET", "http://localhost:8080/web_servlet/ajax");
             // 3. 在send方法前绑定onreadystatechange事件，处理请求完成后的操作
             xmlHttpRequest.onreadystatechange = function () {
                 if (xmlHttpRequest.readyState == 4 && xmlHttpRequest.status == 200){
-                    alert(xmlHttpRequest.responseText);
-                    alert(xmlHttpRequest.responseXML);
+
+                    var jsonObj = JSON.parse(xmlHttpRequest.responseText);
+                    document.getElementById("text").innerHTML = xmlHttpRequest.responseText;
+                    document.getElementById("content").innerHTML = xmlHttpRequest.responseXML;
+                    console.log(xmlHttpRequest.responseXML); // null
+                    document.getElementById("obj").innerHTML = "ID：" + jsonObj.id + ", Name:" + jsonObj['name'];
                 }
             };
 
@@ -21,9 +26,32 @@
             xmlHttpRequest.send();
         }
     </script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
 </head>
 <body>
-<button onclick="ajaxRequest();">发送Ajax请求</button>
-
+<button onclick="ajaxRequest()">发送Ajax请求</button>
+<button id="ajaxbtn">发送JQueryAjax请求</button>
+<div id="text"></div>
+<div id="content"></div>
+<div id="obj"></div>
+<div id="msg"></div>
+<script type="text/javascript">
+    $("#ajaxbtn").click(function () {
+        $.ajax({
+            url: "http://localhost:8080/web_servlet/ajax",
+            // data: "action=JQueryAjax&d=123",
+            data: {action: "AjaxJQuery", d: 321},
+            type: "POST",
+            // dataType: "text",
+            dataType: "json",
+            success: function (data) {
+                //
+                // var jsonObj = JSON.parse(data); // 就JSON数据转换成对象
+                // $("#msg").html("姓名：" + jsonObj.name + ", 编号：" + jsonObj['id']);
+                $("#msg").html("姓名：" + data.name + ", 编号：" + data['id']);
+            }
+        });
+    });
+</script>
 </body>
 </html>
